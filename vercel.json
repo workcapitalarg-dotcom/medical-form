@@ -1,0 +1,28 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "api/**/*.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "public/**",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/public/$1"
+    }
+  ],
+  "env": {
+    "GOOGLE_CREDENTIALS": "@google_credentials",
+    "SHEET_ID": "1kXhb0zpOzeAxNuYe1PA1HjNPinweRZx9cXD1NozXqHU",
+    "SHEET_NAME": "Respuestas de formulario 1"
+  }
+}

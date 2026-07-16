@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#2563EB">
+  <meta name="description" content="Control Médico — Comunidad Feeling. Herramienta profesional para la revisión y corrección de fichas de pacientes.">
+  <title>Control Médico — Comunidad Feeling</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- ════════════════════════════════════════
+       LOADING OVERLAY
+       ════════════════════════════════════════ -->
+  <div id="loading-overlay" class="loading-overlay hidden">
+    <div class="loading-box">
+      <div class="loading-spinner-large"></div>
+      <p class="loading-title" id="loading-title">Cargando...</p>
+      <p class="loading-subtitle" id="loading-subtitle">Sincronizando con el servidor</p>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════
+       LOGIN
+       ════════════════════════════════════════ -->
+  <div id="login-screen" class="screen active">
+    <div class="login-container">
+      <div class="logo">
+        <span class="logo-icon">🏥</span>
+        <h1>Control Médico</h1>
+        <p class="subtitle">Comunidad Feeling</p>
+      </div>
+      <form id="login-form">
+        <div class="form-group">
+          <label for="medico-nombre">Nombre del revisor</label>
+          <input type="text" id="medico-nombre" name="medico" placeholder="Ej: Mercedes" required autocomplete="name">
+        </div>
+        <button type="submit" class="btn btn-primary btn-large" id="btn-login">
+          Ingresar al sistema
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════
+       DASHBOARD
+       ════════════════════════════════════════ -->
+  <div id="dashboard-screen" class="screen">
+
+    <header class="header">
+      <div class="header-main">
+        <!-- Fila 1: Talla y Usuario -->
+        <div class="header-row-top">
+          <div class="header-left">
+            <h2>Control Médico</h2>
+            <div id="medico-header">
+              <span class="user-badge" id="revisor-nombre-badge">Revisor</span>
+            </div>
+          </div>
+          <button id="btn-logout" class="btn-icon" title="Cerrar sesión">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path>
+              <line x1="12" y1="2" x2="12" y2="12"></line>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Fila 2: Navegación y Nombre -->
+        <div class="header-row-nav">
+          <button id="btn-anterior-top" class="btn-nav-compact" title="Anterior">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m15 18-6-6 6-6"/></svg>
+          </button>
+          
+          <div class="header-patient-center">
+            <h3 id="paciente-nombre-label">CARGANDO...</h3>
+            <div class="patient-counter-mini">
+              <span id="patient-count">0</span> / <span id="patient-total">0</span>
+            </div>
+          </div>
+
+          <button id="btn-siguiente-top" class="btn-nav-compact" title="Siguiente">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m9 18 6-6-6-6"/></svg>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- SEARCH -->
+    <div class="search-bar-wrapper">
+      <div class="search-bar">
+        <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"></circle>
+          <path d="m21 21-4.35-4.35"></path>
+        </svg>
+        <input type="text" id="search-input" placeholder="Buscar paciente por nombre..." autocomplete="off">
+        <button class="search-clear-btn" id="search-clear-btn">✕</button>
+      </div>
+    </div>
+
+
+    <!-- ════════════════════════════
+         FICHA DEL PACIENTE
+         ════════════════════════════ -->
+    <div class="patient-card">
+      <div class="risk-bar-indicator" id="risk-badge-header">
+        INDICADOR DE RIESGO
+      </div>
+      <div class="patient-card-header-info">
+          <span class="header-info-item">Edad: <strong id="paciente-edad-header">—</strong></span>
+          <span class="header-info-item" id="paciente-etapa-header">—</span>
+          <span class="header-info-item">DNI: <strong id="paciente-dni-header">—</strong></span>
+        </div>
+      </div>
+
+      <form id="patient-form">
+
+        <!-- ── 1. DATOS PERSONALES ── cols 1-7 -->
+        <div class="form-section open">
+          <button type="button" class="section-toggle">
+            <span class="toggle-left">👤 <span class="title">Datos Personales</span></span>
+            <svg class="arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+          <div class="section-content">
+
+            <div class="form-group">
+              <label>NOMBRE COMPLETO</label>
+              <input type="text" id="campo-1" placeholder="">
+            </div>
+
+            <div class="form-group">
+              <label>EDAD</label>
+              <input type="text" id="campo-2" inputmode="numeric">
+            </div>
+
+            <div class="form-group">
+              <label>ETAPA</label>
+              <input type="text" id="campo-3" readonly class="campo-calculado">
+            </div>
+
+            <div class="form-group">
+              <label>DNI</label>
+              <input type="text" id="campo-4" inputmode="numeric">
+            </div>
+
+            <div class="form-group">
+              <label>GÉNERO</label>
+              <input type="text" id="campo-5">
+            </div>
+
+            <div class="form-group">
+              <label>LUGAR DE RESIDENCIA</label>
+              <input type="text" id="campo-6">
+            </div>
+
+            <div class="form-group">
+              <label>¿CON QUIÉN VIVE?</label>
+              <input type="text" id="campo-7">
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ── 2. MÉTRICAS CLÍNICAS ── cols 8-14 -->
+        <div class="form-section">
+          <button type="button" class="section-toggle">
+            <span class="toggle-left">🩺 <span class="title">Métricas Clínicas</span></span>
+            <svg class="arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+          <div class="section-content">
+
+            <div class="form-group">
+              <label>GRUPO SANGUÍNEO</label>
+              <input type="text" id="campo-8">
+            </div>
+
+            <div class="form-group">
+              <label>OBRA SOCIAL</label>
+              <input type="text" id="campo-9">
+            </div>
+
+            <div class="form-group">
+              <label>CONTACTO DE EMERGENCIA</label>
+              <input type="text" id="campo-10">
+            </div>
+
+            <div class="form-group">
+              <label>PESO (KG)</label>
+              <input type="text" id="campo-11" inputmode="decimal">
+            </div>
+
+            <div class="form-group">
+              <label>ALTURA (EJ. 1,70)</label>
+              <input type="text" id="campo-12" inputmode="decimal">
+            </div>
+
+            <div class="form-group">
+              <label>ÍNDICE MASA CORPORAL</label>
+              <input type="text" id="campo-13" readonly class="campo-calculado">
+            </div>
+
+            <div class="form-group">
+              <label>RESULTADO IMC</label>
+              <input type="text" id="campo-14" readonly class="campo-calculado">
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ── 3. ALIMENTACIÓN Y VACUNAS ── cols 15-20 -->
+        <div class="form-section">
+          <button type="button" class="section-toggle">
+            <span class="toggle-left">🍎 <span class="title">Alimentación y Vacunas</span></span>
+            <svg class="arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+          <div class="section-content">
+
+            <div class="form-group">
+              <label>TIPO DE ALIMENTACIÓN REGULAR</label>
+              <input type="text" id="campo-15">
+            </div>
+
+            <div class="form-group">
+              <label>RESTRICCIONES ALIMENTICIAS</label>
+              <input type="text" id="campo-16">
+            </div>
+
+            <div class="form-group">
+              <label>VACUNAS INFANCIA/JUVENTUD</label>
+              <input type="text" id="campo-17">
+            </div>
+
+            <div class="form-group">
+              <label>¿VACUNA COVID?</label>
+              <input type="text" id="campo-18">
+            </div>
+
+            <div class="form-group">
+              <label>VACUNA NEUMOCOCO</label>
+              <input type="text" id="campo-19">
+            </div>
+
+            <div class="form-group">
+              <label>¿VACUNA GRIPE?</label>
+              <input type="text" id="campo-20">
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ── 4. HISTORIA GINECOLÓGICA ── cols 21-29 -->
+        <div class="form-section">
+          <button type="button" class="section-toggle">
+            <span class="toggle-left">👩 <span class="title">Historia Ginecológica</span></span>
+            <svg class="arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+          <div class="section-content">
+
+            <div class="form-group">
+              <label>EDAD PRIMERA MENSTRUACIÓN</label>
+              <input type="text" id="campo-21" inputmode="numeric">
+            </div>
+
+            <div class="form-group">
+              <label>EDAD MENOPAUSIA</label>
+              <input type="text" id="campo-22" inputmode="numeric">
+            </div>
+
+            <div class="form-group">
+              <label>TRASTORNOS MENSTRUALES</label>
+              <input type="text" id="campo-23">
+            </div>
+
+            <div class="form-group">
+              <label>MÉTODO ANTICONCEPTIVO</label>
+              <input type="text" id="campo-24">
+            </div>
+
+            <div class="form-group">
+              <label>EMBARAZOS</label>
+              <input type="text" id="campo-25" inputmode="numeric">
+            </div>
+
+            <div class="form-group">
+              <label>ABORTOS</label>
+              <input type="text" id="campo-26">
+            </div>
+
+            <div class="form-group">
+              <label>PARTOS NORMALES</label>
+              <input type="text" id="campo-27">
+            </div>
+
+            <div class="form-group">
+              <label>CESÁREAS</label>
+              <input type="text" id="campo-28">
+            </div>
+
+            <div class="form-group">
+              <label>LACTANCIA</label>
+              <input type="text" id="campo-29">
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ── 5. ENFERMEDADES CRÓNICAS ── cols 30-38 -->
+        <div class="form-section">
+          <button type="button" class="section-toggle">
+            <span class="toggle-left">❤️ <span class="title">Enfermedades Crónicas</span></span>
+            <svg class="arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+          <div class="section-content">
+
+            <div class="form-group">
+              <label>RESPIRATORIAS</label>
+              <input type="text" id="campo-30">
+            </div>
+
+            <div class="form-group">
+              <label>CARDIOVASCULARES</label>
+              <input type="text" id="campo-31">
+            </div>
+
+            <div class="form-group">
+              <label>¿TOMA ANTICOAGULANTES?</label>
+              <input type="text" id="campo-32">
+            </div>
+
+            <div class="form-group">
+              <label>OSTEO-ARTICULARES-MUSCULARES</label>
+              <input type="text" id="campo-33">
+            </div>
+
+            <div class="form-group">
+              <label>MOVILIDAD NECESITA</label>
+              <input type="text" id="campo-34">
+            </div>
+
+            <div class="form-group">
+              <label>METABÓLICAS-GLANDULARES</label>
+              <input type="text" id="campo-35">
+            </div>
+
+            <div class="form-group">
+              <label>DIGESTIVAS</label>
+              <input type="text" id="campo-36">
+            </div>
+
+            <div class="form-group">
+              <label>APARATO REPRODUCTOR</label>
+              <input type="text" id="campo-37">
+            </div>
+
+            <div class="form-group">
+              <label>UROLÓGICAS</label>
+              <input type="text" id="campo-38">
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ── 6. ONCOLÓGICAS Y NEUROLÓGICAS ── cols 39-46 -->
+        <div class="form-section">
+          <button type="button" class="section-toggle">
+            <span class="toggle-left">🧠 <span class="title">Oncológicas y Neurológicas</span></span>
+            <svg class="arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+          <div class="section-content">
+
+            <div class="form-group">
+              <label>ONCOLÓGICAS</label>
+              <textarea id="campo-39" rows="2"></textarea>
+            </div>
+
+            <div class="form-group">
+              <label>NEUROLÓGICAS</label>
+              <input type="text" id="campo-40">
+            </div>
+
+            <div class="form-group">
+              <label>ALERGIAS</label>
+              <input type="text" id="campo-41">
+            </div>
+
+            <div class="form-group">
+              <label>ENFERMEDADES POR PARÁSITOS Y HONGOS</label>
+              <input type="text" id="campo-42">
+            </div>
+
+            <div class="form-group">
+              <label>OCULARES</label>
+              <textarea id="campo-43" rows="2"></textarea>
+            </div>
+
+            <div class="form-group">
+              <label>NARIZ-GARGANTA-OÍDO</label>
+              <input type="text" id="campo-44">
+            </div>
+
+            <div class="form-group">
+              <label>SECUELAS ACV (COGNITIVAS/MOTRICES)</label>
+              <input type="text" id="campo-45">
+            </div>
+
+            <div class="form-group">
+              <label>EPILEPSIA O CONVULSIONES</label>
+              <input type="text" id="campo-46">
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ── 7. PSICOLÓGICAS Y ADICCIONES ── cols 47-52 -->
+        <div class="form-section">
+          <button type="button" class="section-toggle">
+            <span class="toggle-left">💊 <span class="title">Psicológicas y Adicciones</span></span>
+            <svg class="arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+          <div class="section-content">
+
+            <div class="form-group">
+              <label>ENFERMEDADES PSICOLÓGICAS/PSIQUIÁTRICAS</label>
+              <textarea id="campo-47" rows="2"></textarea>
+            </div>
+
+            <div class="form-group">
+              <label>ANOREXIA</label>
+              <input type="text" id="campo-48">
+            </div>
+
+            <div class="form-group">
+              <label>BULIMIA</label>
+              <input type="text" id="campo-49">
+            </div>
+
+            <div class="form-group">
+              <label>SUSTANCIAS CONSUMIDAS</label>
+              <input type="text" id="campo-50">
+            </div>
+
+            <div class="form-group">
+              <label>¿OTRA ENFERMEDAD?</label>
+              <input type="text" id="campo-51">
+            </div>
+
+            <div class="form-group">
+              <label>¿PERSONA DE RIESGO DE SALUD? (AUTOEVALUACIÓN)</label>
+              <input type="text" id="campo-52">
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ── 8. INTERVENCIONES Y MEDICACIÓN ── cols 53-56 -->
+        <div class="form-section">
+          <button type="button" class="section-toggle">
+            <span class="toggle-left">🖥️ <span class="title">Intervenciones y Medicación</span></span>
+            <svg class="arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+          <div class="section-content">
+
+            <div class="form-group">
+              <label>INTERVENCIONES QUIRÚRGICAS</label>
+              <textarea id="campo-53" rows="2"></textarea>
+            </div>
+
+            <div class="form-group">
+              <label>TRAUMATISMOS-CAÍDAS-FRACTURAS</label>
+              <textarea id="campo-54" rows="2"></textarea>
+            </div>
+
+            <div class="form-group">
+              <label>MEDICACIÓN ACTUAL</label>
+              <textarea id="campo-55" rows="2"></textarea>
+            </div>
+
+            <div class="form-group">
+              <label>SUPLEMENTOS VITAMÍNICOS</label>
+              <input type="text" id="campo-56">
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ── 9. CONTROLES Y ACTIVIDAD ── cols 57-59 -->
+        <div class="form-section">
+          <button type="button" class="section-toggle">
+            <span class="toggle-left">📊 <span class="title">Controles y Actividad</span></span>
+            <svg class="arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+          <div class="section-content">
+
+            <div class="form-group">
+              <label>CONTROLES MÉDICOS ANUALES</label>
+              <input type="text" id="campo-57">
+            </div>
+
+            <div class="form-group">
+              <label>FECHA ÚLTIMO ANÁLISIS BIOQUÍMICO</label>
+              <input type="text" id="campo-58">
+            </div>
+
+            <div class="form-group">
+              <label>¿REALIZA ACTIVIDAD FÍSICA?</label>
+              <input type="text" id="campo-59">
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ── 10. EVALUACIÓN DE RIESGO ── cols 60-61 -->
+        <div class="form-section">
+          <button type="button" class="section-toggle">
+            <span class="toggle-left">⚠️ <span class="title">Evaluación de Riesgo</span></span>
+            <svg class="arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+          <div class="section-content">
+
+            <div class="form-group">
+              <label>EVALUACIÓN RIESGO</label>
+              <input type="text" id="campo-60" readonly class="campo-calculado">
+            </div>
+
+            <div class="form-group">
+              <label>MOTIVO DE RIESGO</label>
+              <textarea id="campo-61" readonly class="campo-calculado" rows="3"></textarea>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ── 11. DATOS DE CONTROL ── col 62 -->
+        <div class="form-section">
+          <button type="button" class="section-toggle">
+            <span class="toggle-left">✏️ <span class="title">Datos de Control</span></span>
+            <svg class="arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+          <div class="section-content">
+
+            <div class="form-group">
+              <label>CONTROL (REVISOR)</label>
+              <input type="text" id="campo-62" readonly class="campo-readonly">
+            </div>
+
+          </div>
+        </div>
+
+      </form>
+    </div>
+    <!-- /patient-card -->
+
+
+    <!-- BOTTOM TABS -->
+    <nav class="bottom-tabs">
+      <a href="#" class="tab-item active">
+        <div class="tab-icon">📋</div>
+        <span>Corrección</span>
+      </a>
+      <a href="#" class="tab-item disabled">
+        <div class="tab-icon">📊</div>
+        <span>Dashboard</span>
+      </a>
+    </nav>
+
+    <!-- SAVE INDICATOR -->
+    <div id="save-indicator" class="save-indicator-floating hidden">
+      <div class="spinner-small"></div>
+      <span id="save-text">💾 Guardando...</span>
+    </div>
+
+  </div>
+  <!-- /dashboard-screen -->
+
+  <div id="toast-container" class="toast-container"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

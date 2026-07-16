@@ -1,0 +1,25 @@
+# Variables de entorno con secretos
+.env.local
+.env
+
+# Credenciales de Google (NUNCA subir a git)
+credentials.json
+*.key.json
+
+# Node modules
+node_modules/
+
+# Vercel
+.vercel
+.time
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Backups
+*.bak

@@ -1,0 +1,21 @@
+{
+  "name": "medical-web-app-feeling",
+  "version": "1.0.0",
+  "description": "Web App Médica - Control y Evaluación Comunidad Feeling",
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "vercel build",
+    "deploy": "vercel --prod"
+  },
+  "dependencies": {
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "googleapis": "^140.0.0"
+  },
+  "devDependencies": {
+    "vercel": "^34.0.0"
+  },
+  "engines": {
+    "node": "20.x"
+  }
+}
