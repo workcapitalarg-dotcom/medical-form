@@ -17,8 +17,23 @@ async function getSheetsClient() {
   }
 
   try {
-    // Parsear credenciales desde variable de entorno
-    const credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS);
+    let credentials;
+
+    if (process.env.GOOGLE_CREDENTIALS && process.env.GOOGLE_CREDENTIALS.trim() !== '') {
+      // Opción 1: JSON completo
+      credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS);
+    } else if (process.env.GOOGLE_CLIENT_EMAIL && process.env.GOOGLE_PRIVATE_KEY) {
+      // Opción 2: Variables separadas
+      // Sanitizar la clave privada reemplazando \n escapados por saltos de línea reales
+      const privateKey = process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n').trim();
+      credentials = {
+        client_email: process.env.GOOGLE_CLIENT_EMAIL.trim(),
+        private_key: privateKey,
+        project_id: process.env.GOOGLE_PROJECT_ID ? process.env.GOOGLE_PROJECT_ID.trim() : undefined,
+      };
+    } else {
+      throw new Error('No se encontraron credenciales válidas en las variables de entorno (se requiere GOOGLE_CREDENTIALS o GOOGLE_CLIENT_EMAIL y GOOGLE_PRIVATE_KEY)');
+    }
 
     // Crear autenticación con Service Account
     const auth = new google.auth.GoogleAuth({
@@ -30,7 +45,7 @@ async function getSheetsClient() {
     return auth;
   } catch (error) {
     console.error('Error al configurar autenticación de Google:', error.message);
-    throw new Error('Configuración de Google Sheets inválida. Verifica GOOGLE_CREDENTIALS');
+    throw new Error('Configuración de Google Sheets inválida: ' + error.message);
   }
 }
 
