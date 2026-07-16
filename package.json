@@ -4,7 +4,7 @@
   "description": "Web App Médica - Control y Evaluación Comunidad Feeling",
   "scripts": {
     "dev": "vercel dev",
-    "build": "vercel build",
+    "build": "echo 'No build step required'",
     "deploy": "vercel --prod"
   },
   "dependencies": {
