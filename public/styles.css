@@ -720,3 +720,165 @@ body {
 .toast-success { border-left: 4px solid var(--color-success); }
 .toast-warning { border-left: 4px solid var(--color-warning); }
 .toast-error { border-left: 4px solid var(--color-error); }
+
+/* NAV PILLS (Pestañas Header) */
+.nav-pills-container {
+  display: flex;
+  background: rgba(255, 255, 255, 0.15);
+  padding: 3px;
+  border-radius: 20px;
+  gap: 4px;
+  margin-left: 10px;
+}
+
+.pill-btn {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.8);
+  padding: 6px 14px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pill-btn:hover {
+  color: white;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.pill-btn.active {
+  background: white;
+  color: var(--color-primary-dark);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* VISTA SHEET TRAYECTO */
+.trayecto-container {
+  padding: 16px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.trayecto-header-card {
+  background: white;
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+@media (min-width: 640px) {
+  .trayecto-header-card {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.trayecto-title-group h3 {
+  margin: 0 0 4px 0;
+  color: var(--color-text);
+  font-size: 1.15rem;
+}
+
+.trayecto-subtitle {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+}
+
+.trayecto-search {
+  max-width: 320px;
+  width: 100%;
+}
+
+.trayecto-table-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border);
+  overflow: hidden;
+}
+
+.table-responsive {
+  overflow-x: auto;
+}
+
+.trayecto-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.9rem;
+}
+
+.trayecto-table th {
+  background: #F1F5F9;
+  padding: 12px 16px;
+  font-weight: 600;
+  color: #475569;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.trayecto-table td {
+  padding: 10px 16px;
+  border-bottom: 1px solid #F1F5F9;
+  vertical-align: middle;
+}
+
+.trayecto-table tr:hover {
+  background: #F8FAFC;
+}
+
+.input-trayecto-bk {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1.5px solid var(--color-border);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  background: white;
+}
+
+.input-trayecto-bk:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.input-trayecto-bk.saved-flash {
+  animation: flashSuccess 1s ease-out;
+}
+
+@keyframes flashSuccess {
+  0% { background-color: #DCFCE7; border-color: #22C55E; }
+  100% { background-color: white; border-color: var(--color-border); }
+}
+
+.trayecto-status-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.status-saved {
+  background: #DCFCE7;
+  color: #15803D;
+}
+
+.status-saving {
+  background: #FEF3C7;
+  color: #B45309;
+}
+
+.status-idle {
+  color: #94A3B8;
+}
+

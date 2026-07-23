@@ -14,6 +14,8 @@ const CONFIG = {
   SYNC_STORE: 'syncQueue',
   API_GET: '/api/obtener-registros',
   API_SAVE: '/api/guardar-fila',
+  API_TRAYECTO_GET: '/api/obtener-trayecto',
+  API_TRAYECTO_SAVE: '/api/actualizar-controlador',
 };
 
 // Mapeo de las columnas relevantes del Google Sheet (0-62)
@@ -40,7 +42,10 @@ let state = {
   indiceActual: 0,
   isDirty: false,
   isOnline: navigator.onLine,
-  isSyncing: false
+  isSyncing: false,
+  vistaActiva: 'fichas', // 'fichas' o 'trayecto'
+  trayectoRegistros: [],
+  trayectoFiltrados: []
 };
 
 // ==========================================
@@ -103,6 +108,42 @@ function setupEventListeners() {
   document.getElementById('patient-form').addEventListener('input', () => {
     state.isDirty = true;
   });
+
+  // Eventos Subvista Trayecto (Mercedes)
+  const btnFichas = document.getElementById('btn-view-fichas');
+  const btnTrayecto = document.getElementById('btn-view-trayecto');
+  if (btnFichas) btnFichas.addEventListener('click', () => cambiarSubvista('fichas'));
+  if (btnTrayecto) btnTrayecto.addEventListener('click', () => cambiarSubvista('trayecto'));
+
+  const trayectoSearch = document.getElementById('trayecto-search-input');
+  const trayectoClear = document.getElementById('trayecto-search-clear');
+  if (trayectoSearch) {
+    trayectoSearch.addEventListener('input', (e) => {
+      const q = e.target.value.trim();
+      if (trayectoClear) trayectoClear.classList.toggle('visible', q.length > 0);
+      filtrarTrayecto(q);
+    });
+  }
+  if (trayectoClear) {
+    trayectoClear.addEventListener('click', () => {
+      trayectoSearch.value = '';
+      trayectoClear.classList.remove('visible');
+      filtrarTrayecto('');
+      trayectoSearch.focus();
+    });
+  }
+
+  // Auto-guardado de Columna BK al cambiar el input
+  const tableBody = document.getElementById('trayecto-table-body');
+  if (tableBody) {
+    tableBody.addEventListener('change', (e) => {
+      if (e.target && e.target.classList.contains('input-trayecto-bk')) {
+        const numFila = parseInt(e.target.getAttribute('data-fila'), 10);
+        const val = e.target.value;
+        guardarColumnaBK(numFila, val, e.target);
+      }
+    });
+  }
 }
 
 // ==========================================
@@ -158,6 +199,7 @@ async function handleLogout() {
 }
 
 async function iniciarDashboard() {
+  verificarPermisosMercedes();
   showLoading('Cargando pacientes...', `Buscando registros de ${state.medico}`);
 
   try {
@@ -512,4 +554,166 @@ function hideLoading() {
 function showSaveIndicator(show) {
   const el = document.getElementById('save-indicator');
   if (el) el.classList.toggle('hidden', !show);
+}
+
+// ==========================================
+// MÓDULO SHEET TRAYECTO (Mercedes)
+// ==========================================
+
+function verificarPermisosMercedes() {
+  const pills = document.getElementById('trayecto-nav-pills');
+  const esMercedes = (state.medico || '').toLowerCase().trim().includes('mercedes');
+  if (pills) {
+    pills.classList.toggle('hidden', !esMercedes);
+  }
+}
+
+function cambiarSubvista(vista) {
+  state.vistaActiva = vista;
+  const viewFichas = document.getElementById('view-fichas');
+  const viewTrayecto = document.getElementById('view-trayecto');
+  const btnFichas = document.getElementById('btn-view-fichas');
+  const btnTrayecto = document.getElementById('btn-view-trayecto');
+
+  if (vista === 'fichas') {
+    if (viewFichas) viewFichas.classList.remove('hidden');
+    if (viewTrayecto) viewTrayecto.classList.add('hidden');
+    if (btnFichas) btnFichas.classList.add('active');
+    if (btnTrayecto) btnTrayecto.classList.remove('active');
+  } else if (vista === 'trayecto') {
+    if (viewFichas) viewFichas.classList.add('hidden');
+    if (viewTrayecto) viewTrayecto.classList.remove('hidden');
+    if (btnFichas) btnFichas.classList.remove('active');
+    if (btnTrayecto) btnTrayecto.classList.add('active');
+
+    if (state.trayectoRegistros.length === 0) {
+      cargarVistaTrayecto();
+    }
+  }
+}
+
+async function cargarVistaTrayecto() {
+  const tbody = document.getElementById('trayecto-table-body');
+  if (tbody) {
+    tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4">Cargando registros de trayecto... ⏳</td></tr>';
+  }
+
+  try {
+    const res = await fetch(CONFIG.API_TRAYECTO_GET);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+
+    state.trayectoRegistros = data.registros || [];
+    state.trayectoFiltrados = [...state.trayectoRegistros];
+    renderizarTablaTrayecto();
+  } catch (err) {
+    console.error('[Trayecto] Error al cargar:', err);
+    showToast('Error al cargar la tabla de trayecto ❌', 'error');
+    if (tbody) {
+      tbody.innerHTML = '<tr><td colspan="4" class="text-center text-error py-4">Error al cargar datos del servidor</td></tr>';
+    }
+  }
+}
+
+function renderizarTablaTrayecto() {
+  const tbody = document.getElementById('trayecto-table-body');
+  if (!tbody) return;
+
+  if (state.trayectoFiltrados.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-4">No se encontraron registros</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = state.trayectoFiltrados.map(item => `
+    <tr>
+      <td><strong>#${item.numFila}</strong></td>
+      <td>${item.nombre ? escapeHtml(item.nombre) : '<em style="color:#94A3B8;">Sin nombre</em>'}</td>
+      <td>
+        <input 
+          type="text" 
+          class="input-trayecto-bk" 
+          data-fila="${item.numFila}" 
+          data-prev="${escapeHtml(item.controlador || '')}"
+          value="${escapeHtml(item.controlador || '')}" 
+          placeholder="Escribe el controlador (ej: Mercedes)..."
+        >
+      </td>
+      <td style="text-align: center;" id="status-badge-${item.numFila}">
+        <span class="trayecto-status-badge status-idle">Sin cambios</span>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function filtrarTrayecto(termino) {
+  if (!termino) {
+    state.trayectoFiltrados = [...state.trayectoRegistros];
+  } else {
+    const q = termino.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    state.trayectoFiltrados = state.trayectoRegistros.filter(item => {
+      const nombre = (item.nombre || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      const controlador = (item.controlador || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      return nombre.includes(q) || controlador.includes(q);
+    });
+  }
+  renderizarTablaTrayecto();
+}
+
+async function guardarColumnaBK(numFila, valor, inputEl) {
+  const prevVal = inputEl ? inputEl.getAttribute('data-prev') : '';
+  const valorTrim = valor ? valor.trim() : '';
+
+  if (prevVal === valorTrim) return; // Sin cambios
+
+  const badgeCell = document.getElementById(`status-badge-${numFila}`);
+  if (badgeCell) {
+    badgeCell.innerHTML = '<span class="trayecto-status-badge status-saving">Guardando... ⏳</span>';
+  }
+
+  try {
+    const res = await fetch(CONFIG.API_TRAYECTO_SAVE, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ numFila, controlador: valorTrim })
+    });
+
+    const data = await res.json();
+    if (!res.ok || !data.exito) throw new Error(data.error || 'Error al guardar');
+
+    if (inputEl) {
+      inputEl.setAttribute('data-prev', valorTrim);
+      inputEl.classList.add('saved-flash');
+      setTimeout(() => inputEl.classList.remove('saved-flash'), 1000);
+    }
+
+    const item = state.trayectoRegistros.find(r => r.numFila === numFila);
+    if (item) item.controlador = valorTrim;
+
+    if (badgeCell) {
+      badgeCell.innerHTML = '<span class="trayecto-status-badge status-saved">Guardado ✓</span>';
+      setTimeout(() => {
+        if (badgeCell.innerHTML.includes('Guardado ✓')) {
+          badgeCell.innerHTML = '<span class="trayecto-status-badge status-idle">Sin cambios</span>';
+        }
+      }, 3000);
+    }
+
+    showToast(`Fila #${numFila} actualizada a "${valorTrim || '(Vacío)'}" ✅`, 'success');
+  } catch (err) {
+    console.error('[Trayecto] Error al guardar controlador:', err);
+    if (badgeCell) {
+      badgeCell.innerHTML = '<span class="trayecto-status-badge status-error" style="background:#FEE2E2;color:#991B1B;">Error ❌</span>';
+    }
+    showToast(`Error al guardar fila #${numFila} ❌`, 'error');
+  }
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return str.toString()
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 }

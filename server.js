@@ -19,10 +19,14 @@ app.get('/', (req, res) => {
 // Importar controladores adaptados a Express
 const obtenerRegistros = require('./api/obtener-registros');
 const guardarFila = require('./api/guardar-fila');
+const obtenerTrayecto = require('./api/obtener-trayecto');
+const actualizarControlador = require('./api/actualizar-controlador');
 
 // Rutas
 app.get('/api/obtener-registros', obtenerRegistros);
 app.post('/api/guardar-fila', guardarFila);
+app.get('/api/obtener-trayecto', obtenerTrayecto);
+app.post('/api/actualizar-controlador', actualizarControlador);
 
 const PORT = 3000;
 app.listen(PORT, (err) => {
