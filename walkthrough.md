@@ -49,5 +49,18 @@
   - En [public/styles.css](file:///c:/temp/Antigravity/medical-web-app/public/styles.css): Agregados estilos responsivos para las pestañas header, la tabla de Trayecto y las insignias de estado de auto-guardado en tiempo real (`Guardado ✓`, `Guardando... ⏳`).
   - En [public/app.js](file:///c:/temp/Antigravity/medical-web-app/public/app.js): Implementada la detección de rol de Mercedes, conmutación de pestañas, búsqueda/filtro de pacientes y el auto-guardado reactivo al modificar la Columna BK.
 
+### 7. Ajustes en Módulo "Asignar Médico" (23-Jul-2026)
+* **Requerimiento:** 
+  1. Cambiar el título a "Asignar Médico".
+  2. Restringir la Columna BK solo a entradas permitidas: "Mercedes", "Meloni", "Claudia", "Zanoni", "Alvo" (case-insensitive).
+  3. Omitir la fila 2 (encabezado de columnas) para empezar la iteración desde la fila 3.
+* **Backend:**
+  - Actualizado [api/obtener-trayecto.js](file:///c:/temp/Antigravity/medical-web-app/api/obtener-trayecto.js) haciendo `.slice(2)` para comenzar desde la fila 3 (`numFila = index + 3`).
+  - Actualizado [api/actualizar-controlador.js](file:///c:/temp/Antigravity/medical-web-app/api/actualizar-controlador.js) con validación case-insensitive de médicos permitidos y rechazo de filas < 3.
+  - Actualizado [test/actualizar-controlador.test.js](file:///c:/temp/Antigravity/medical-web-app/test/actualizar-controlador.test.js) con 6 tests unitarios pasando.
+* **Frontend:**
+  - En [public/index.html](file:///c:/temp/Antigravity/medical-web-app/public/index.html): Renombrados títulos y etiquetas a "Asignar Médico".
+  - En [public/app.js](file:///c:/temp/Antigravity/medical-web-app/public/app.js): Implementado selector desplegable (`<select>`) con los 5 médicos permitidos + opción desasignar/vacío.
+
 ---
 *Documento de seguimiento actualizado por el asistente de IA Antigravity.*

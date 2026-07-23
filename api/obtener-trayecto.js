@@ -1,5 +1,6 @@
 /**
- * API Endpoint: Obtener todos los registros para la vista Trayecto (Columna B y Columna BK)
+ * API Endpoint: Obtener todos los registros para la vista Asignar Médico (Columna B y Columna BK)
+ * Omite las filas 1 y 2 (encabezados) para comenzar desde la fila 3 de datos.
  */
 
 const { getAllRows } = require('./utils/googleSheets');
@@ -11,16 +12,16 @@ module.exports = async function(req, res) {
   try {
     const filas = await getAllRows(SHEET_ID, SHEET_NAME);
 
-    if (!filas || filas.length <= 1) {
+    if (!filas || filas.length <= 2) {
       return res.status(200).json({ registros: [], total: 0 });
     }
 
-    // Datos desde fila 2 (índice 1 en array)
-    const datos = filas.slice(1);
+    // Omitir fila 1 (index 0) y fila 2 (index 1, nombres de columnas). Datos desde fila 3 (index 2).
+    const datos = filas.slice(2);
     const registros = [];
 
     datos.forEach((fila, index) => {
-      const numFila = index + 2;
+      const numFila = index + 3; // Fila 3 en adelante
       const nombre = fila[1] ? fila[1].toString().trim() : ''; // Columna B (índice 1)
       const controlador = fila[62] ? fila[62].toString().trim() : ''; // Columna BK (índice 62)
 

@@ -624,25 +624,40 @@ function renderizarTablaTrayecto() {
     return;
   }
 
-  tbody.innerHTML = state.trayectoFiltrados.map(item => `
-    <tr>
-      <td><strong>#${item.numFila}</strong></td>
-      <td>${item.nombre ? escapeHtml(item.nombre) : '<em style="color:#94A3B8;">Sin nombre</em>'}</td>
-      <td>
-        <input 
-          type="text" 
-          class="input-trayecto-bk" 
-          data-fila="${item.numFila}" 
-          data-prev="${escapeHtml(item.controlador || '')}"
-          value="${escapeHtml(item.controlador || '')}" 
-          placeholder="Escribe el controlador (ej: Mercedes)..."
-        >
-      </td>
-      <td style="text-align: center;" id="status-badge-${item.numFila}">
-        <span class="trayecto-status-badge status-idle">Sin cambios</span>
-      </td>
-    </tr>
-  `).join('');
+  const medicosPermitidos = ['Mercedes', 'Meloni', 'Claudia', 'Zanoni', 'Alvo'];
+
+  tbody.innerHTML = state.trayectoFiltrados.map(item => {
+    const currValLower = (item.controlador || '').toLowerCase().trim();
+    const esValorHistoricoDesconocido = currValLower !== '' && !medicosPermitidos.some(m => m.toLowerCase() === currValLower);
+
+    const optionsHtml = [
+      '<option value="">-- Sin Asignar --</option>',
+      ...medicosPermitidos.map(med => {
+        const sel = currValLower === med.toLowerCase() ? 'selected' : '';
+        return `<option value="${med}" ${sel}>${med}</option>`;
+      }),
+      esValorHistoricoDesconocido ? `<option value="${escapeHtml(item.controlador)}" selected>${escapeHtml(item.controlador)} (Actual)</option>` : ''
+    ].join('');
+
+    return `
+      <tr>
+        <td><strong>#${item.numFila}</strong></td>
+        <td>${item.nombre ? escapeHtml(item.nombre) : '<em style="color:#94A3B8;">Sin nombre</em>'}</td>
+        <td>
+          <select 
+            class="input-trayecto-bk" 
+            data-fila="${item.numFila}" 
+            data-prev="${escapeHtml(item.controlador || '')}"
+          >
+            ${optionsHtml}
+          </select>
+        </td>
+        <td style="text-align: center;" id="status-badge-${item.numFila}">
+          <span class="trayecto-status-badge status-idle">Sin cambios</span>
+        </td>
+      </tr>
+    `;
+  }).join('');
 }
 
 function filtrarTrayecto(termino) {
